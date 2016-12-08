@@ -1,0 +1,18 @@
+[submodule "lib/semver"]
+	path = lib/semver
+	url = https://github.com/benmerckx/semver
+[submodule "lib/asys"]
+	path = lib/asys
+	url = https://github.com/benmerckx/asys
+[submodule "lib/tink_io"]
+	path = lib/tink_io
+	url = https://github.com/haxetink/tink_io
+[submodule "lib/tink_parse"]
+	path = lib/tink_parse
+	url = https://github.com/haxetink/tink_parse
+[submodule "lib/tink_core"]
+	path = lib/tink_core
+	url = https://github.com/haxetink/tink_core
+[submodule "lib/tink_streams"]
+	path = lib/tink_streams
+	url = https://github.com/haxetink/tink_streams

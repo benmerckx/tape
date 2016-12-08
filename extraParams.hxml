@@ -1,0 +1,6 @@
+-cp lib/semver/src
+-cp lib/asys
+-cp lib/tink_core/src
+-cp lib/tink_io/src
+-cp lib/tink_parse/src
+-cp lib/tink_streams/src
