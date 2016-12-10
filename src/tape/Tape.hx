@@ -1,7 +1,9 @@
 package tape;
 
-class Tape {
-    
-    public function new() {}
+import tink.http.Client;
 
+class Tape {
+
+    //public static var http(default, null) = new StdClient();
+    
 }

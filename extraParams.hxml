@@ -4,3 +4,8 @@
 -cp lib/tink_io/src
 -cp lib/tink_parse/src
 -cp lib/tink_streams/src
+-cp lib/tink_http/src
+-cp lib/tink_url/src
+-cp lib/tink_stringly/src
+-cp lib/tink_tcp/src
+-D tink_tcp

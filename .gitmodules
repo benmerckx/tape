@@ -16,3 +16,16 @@
 [submodule "lib/tink_streams"]
 	path = lib/tink_streams
 	url = https://github.com/haxetink/tink_streams
+[submodule "lib/tink_http"]
+	path = lib/tink_http
+	url = https://github.com/benmerckx/tink_http
+	branch = dev
+[submodule "lib/tink_url"]
+	path = lib/tink_url
+	url = https://github.com/haxetink/tink_url
+[submodule "lib/tink_stringly"]
+	path = lib/tink_stringly
+	url = https://github.com/haxetink/tink_stringly
+[submodule "lib/tink_tcp"]
+	path = lib/tink_tcp
+	url = https://github.com/haxetink/tink_tcp
