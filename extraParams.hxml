@@ -9,3 +9,7 @@
 -cp lib/tink_stringly/src
 -cp lib/tink_tcp/src
 -D tink_tcp
+-cp lib/tink_priority/src
+-cp lib/tink_runloop/src
+-cp lib/tink_concurrent/src
+-D concurrent

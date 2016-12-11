@@ -1,11 +1,12 @@
 package tape;
 
 import semver.RangeSet;
-import tape.registry.Haxelib;
+import tape.registry.*;
 
 using StringTools;
 
 enum SourceType {
+    Root(manifest: Manifest);
     Versioned(range: RangeSet, registry: Registry);
     Pinned;
 }

@@ -29,3 +29,12 @@
 [submodule "lib/tink_tcp"]
 	path = lib/tink_tcp
 	url = https://github.com/haxetink/tink_tcp
+[submodule "lib/graphx"]
+	path = lib/graphx
+	url = https://github.com/benmerckx/graphx
+[submodule "lib/tink_runloop"]
+	path = lib/tink_runloop
+	url = https://github.com/haxetink/tink_runloop
+[submodule "lib/tink_concurrent"]
+	path = lib/tink_concurrent
+	url = https://github.com/haxetink/tink_concurrent
