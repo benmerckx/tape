@@ -9,10 +9,11 @@ import semver.SemVer;
 import tink.http.Client;
 import tape.Manifest;
 import tink.streams.Stream;
+import tape.registry.Registry;
 
 using tink.CoreApi;
 
-class Haxelib implements Registry {
+class Haxelib implements RegistryBase {
 
     public static var instance(default, null): Haxelib = new Haxelib();
     static var host = new Host('lib.haxe.org', 443);
@@ -22,7 +23,7 @@ class Haxelib implements Registry {
     function new()
         http = new SecureStdClient();
 
-    public function fetchManifest(name: String, version: SemVer): Promise<Manifest> {
+    public function manifest(name: String, version: SemVer): Promise<Manifest> {
         var request = new OutgoingRequest(
             new OutgoingRequestHeader(
                 GET, host, 
@@ -50,7 +51,7 @@ class Haxelib implements Registry {
         });
     }
 
-    public function fetchVersions(name): Stream<SemVer> {
+    public function versions(name): Stream<SemVer> {
         var packer = new Serializer();
 		packer.serialize(['api', 'infos']);
 		packer.serialize([name]);

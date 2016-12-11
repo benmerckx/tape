@@ -27,7 +27,7 @@ abstract Dependency(DependencyData) from DependencyData {
             case Versioned(range, registry):
                 // The analyzer somehow fails if this.name is used in the closure
                 var name = this.name;
-                var versions = registry.fetchVersions(name)
+                var versions = registry.versions(name)
                     .filter(function(version)
                         return range.satisfies(version)
                     );
@@ -37,7 +37,7 @@ abstract Dependency(DependencyData) from DependencyData {
                         .flatMap(function(step) return switch step {
                             case Data(version):
                                 (registry
-                                .fetchManifest(name, version): Surprise<Manifest, Error>)
+                                .manifest(name, version): Surprise<Manifest, Error>)
                                 .map(function(res) return switch res {
                                     case Success(manifest): Data(manifest);
                                     case Failure(e): Fail(e);
