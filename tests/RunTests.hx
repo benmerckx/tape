@@ -10,14 +10,7 @@ class RunTests {
   static var sample: Dynamic = {
     tape: {
       dependencies: {
-        monsoon: '',
-        tink_macro: '^0.10.0'
-      },
-      reels: {
-        embed: {
-          tink_tcp: '*',
-          systools: '^1'
-        }
+        tink_core: '*'
       }
     }
   };

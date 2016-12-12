@@ -42,7 +42,7 @@ class ConcatRegistry implements RegistryBase {
             var remaining = parts.copy();
             function next() {
                 if (remaining.length == 0)
-                    return done(Failure(new Error('Could not find version for "$name"')));
+                    return done(Failure(TapeError.create('Could not find version for "$name"')));
                 remaining.shift()
                 .manifest(name, version)
                 .handle(function (res) switch res {

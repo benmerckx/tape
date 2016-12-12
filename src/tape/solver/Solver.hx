@@ -44,9 +44,9 @@ class Solver {
                 selected.set(manifest.name, manifest);
                 Data(manifest);
             case Fail(e):
-                Fail(new Error('Could not load library "${dependency.name}": ${e.message}'));
+                Fail(TapeError.create('Could not load library "${dependency.name}"', e));
             case End: 
-                Fail(new Error('No suitable version found for "${dependency.name}"'));
+                Fail(TapeError.create('No suitable version found for "${dependency.name}"'));
         });
     }
 

@@ -21,7 +21,7 @@ class Haxelib implements RegistryBase {
     var http: Client;
 
     function new()
-        http = new SecureStdClient();
+        http = new SecureTcpClient();
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
         var request = new OutgoingRequest(
@@ -36,17 +36,17 @@ class Haxelib implements RegistryBase {
             if (response.header.statusCode == 404)
                 return Future.sync(Success(new Manifest(name, version)));
             if (response.header.statusCode != 200)
-                return Future.sync(Failure(new Error('Could not load manifest')));
+                return Future.sync(Failure(TapeError.create('Could not load manifest')));
             return response.body.all().map(function(res) return switch res {
                 case Success(bytes):
                     var data: JsonSchema;
                     try
                         data = haxe.Json.parse(bytes.toString())
                     catch (e: Dynamic)
-                        return Failure(new Error('Could not parse manifest body'));
+                        return Failure(TapeError.create('Could not parse manifest body', TapeError.create('$e')));
                     return Manifest.fromJsonSchema(data);
                 default:
-                    Failure(new Error('Could not read response body'));
+                    Failure(TapeError.create('Could not read response body'));
             });
         });
     }
@@ -62,10 +62,10 @@ class Haxelib implements RegistryBase {
             ), ''
         );
         return http.request(request).flatMap(function (response) {
-            if (response.header.statusCode != 200)
-                return Future.sync(Failure(new Error('Could not load versions')));
             return response.body.all().map(function(res) return switch res {
                 case Success(bytes):
+                    if (response.header.statusCode != 200)
+                        return Failure(TapeError.create(response.header.statusCode, bytes.toString()));
                     Error.catchExceptions(function() {
                         var buf = bytes.toString();
                         if (buf.substr(0, 3) != 'hxr')
@@ -78,7 +78,7 @@ class Haxelib implements RegistryBase {
                         ];
                     });
                 default:
-                    Failure(new Error('Could not read response body'));
+                    Failure(TapeError.create('Could not read response body'));
             });
         }).map(function(res) return switch res {
             case Success(versions):

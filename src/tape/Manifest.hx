@@ -20,7 +20,7 @@ typedef JsonSchema = {
     var tape: {
         ?dependencies: DynamicAccess<String>,
         ?reels: DynamicAccess<DynamicAccess<String>>
-    }
+    };
 	@:optional 
     var main: String;
 }
@@ -81,7 +81,7 @@ abstract Manifest(ManifestData) from ManifestData {
                     case Failure(e): errors.push(e);
                 }
             if (errors.length > 0) 
-                return Failure(new Error('Version conflicts: '+errors.join(', ')));
+                return Failure(TapeError.create('Version conflicts', errors));
             return Success(lock);
         });
     }
@@ -123,9 +123,9 @@ abstract Manifest(ManifestData) from ManifestData {
                 try
                     fromJsonSchema(Json.parse(data), name)
                 catch (e: Dynamic)
-                    Failure(new Error('Could not parse manifest file "$path": $e'));
+                    Failure(TapeError.create('Could not parse manifest file "$path"', TapeError.create('$e')));
             default: 
-                Failure(new Error('Could not read manifest file "$path"'));
+                Failure(TapeError.create('Could not read manifest file "$path"'));
         });
 
 }
