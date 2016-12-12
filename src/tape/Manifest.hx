@@ -5,7 +5,6 @@ import haxe.DynamicAccess;
 import haxe.Json;
 import semver.SemVer;
 import tape.solver.Solver;
-import tink.RunLoop;
 
 using tink.CoreApi;
 
@@ -55,9 +54,10 @@ abstract Manifest(ManifestData) from ManifestData {
                 solver: new Solver(this.reels.get(reel).concat(this.dependencies))
             });
         for (task in tasks) {
-            var worker = RunLoop.current.createSlave();
+            #if tink_runloop
+            var worker = tink.RunLoop.current.createSlave();
             results.push(Future.flatten(
-                RunLoop.current.delegate(function() {
+                tink.RunLoop.current.delegate(function() {
                     var trigger = Future.trigger();
                     task.solver.solve().handle(function(result) {
                         trigger.trigger({
@@ -68,6 +68,12 @@ abstract Manifest(ManifestData) from ManifestData {
                     return trigger.asFuture();
                 }, worker)
             ));
+            #else
+            results.push((task.solver.solve(): Surprise<Map<String, Manifest>, Error>).map(function(result) return {
+                name: task.name,
+                versions: result
+            }));
+            #end
         }
         
         return Future.ofMany(results).map(function(response) {

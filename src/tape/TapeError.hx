@@ -15,8 +15,8 @@ class TapeError extends TypedError<PreviousErrors> {
 
     override public function toString() {
         return 
-            '\n$message' + 
-            '\n @ '+printPos() +
+            '\n> $message' + 
+            '\n@ '+printPos() +
             if (data != null) [
                 for (err in data)
                     err.toString()

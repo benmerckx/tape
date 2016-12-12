@@ -15,13 +15,13 @@ using tink.CoreApi;
 
 class Haxelib implements RegistryBase {
 
-    public static var instance(default, null): Haxelib = new Haxelib();
+    public static var instance(default, null): Registry = new Haxelib();
     static var host = new Host('lib.haxe.org', 443);
 
     var http: Client;
 
     function new()
-        http = new SecureTcpClient();
+        http = new SecureStdClient();
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
         var request = new OutgoingRequest(
@@ -51,7 +51,10 @@ class Haxelib implements RegistryBase {
         });
     }
 
-    public function versions(name): Stream<SemVer> {
+    public function versions(name): Stream<SemVer>
+        return (Future.lazy(fetchVersions.bind(name)): Promise<Stream<SemVer>>);  
+    
+    function fetchVersions(name): Stream<SemVer> {
         var packer = new Serializer();
 		packer.serialize(['api', 'infos']);
 		packer.serialize([name]);

@@ -18,6 +18,6 @@ abstract Source(SourceType) from SourceType {
         return if (str.startsWith('git'))
             Pinned;
         else
-            Versioned((str: RangeSet), Haxelib.instance);
+            Versioned((str: RangeSet), Local.instance.concat(Haxelib.instance));
 
 }
