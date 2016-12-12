@@ -79,7 +79,7 @@ class Haxelib implements RegistryBase {
                             for (release in data.versions)
                                 (release.name: SemVer)
                         ];
-                    });
+                    }, function (e) return TapeError.create('$e'));
                 default:
                     Failure(TapeError.create('Could not read response body'));
             });

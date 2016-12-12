@@ -42,6 +42,9 @@ abstract Manifest(ManifestData) from ManifestData {
             main: None
         }
 
+    public function key()
+        return this.name+'@'+this.version;
+
     public function lock(): Promise<Lock> {
         var tasks = [], results = [];
         tasks.push({
@@ -87,7 +90,7 @@ abstract Manifest(ManifestData) from ManifestData {
                     case Failure(e): errors.push(e);
                 }
             if (errors.length > 0) 
-                return Failure(TapeError.create('Version conflicts', errors));
+                return Failure(TapeError.create('Could not lock down dependencies for "${this.name}"', errors));
             return Success(lock);
         });
     }
@@ -137,7 +140,7 @@ abstract Manifest(ManifestData) from ManifestData {
     @:to
     public function toString()
         return 
-            [this.name+'@'+this.version]
+            [key()]
             .concat([
                 for (dependency in this.dependencies) 
                     ' -'+dependency.toString()

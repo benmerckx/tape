@@ -9,14 +9,27 @@ class RunTests {
 
   static var sample: Dynamic = {
     tape: {
-      dependencies: {
-        tink_io: '*',
-        monsoon: '>0.1'
-      },
       reels: {
-        embed: {
-          monsoon: '>0.1',
-          'ufront': ''
+        two: {
+          'tink_core': '<1.4.0'
+        },
+        a: {
+          'tink_core': '<1.2.0'
+        },
+        b: {
+          'tink_core': '<1.2.0'
+        },
+        c: {
+          'tink_core': '>1.5.0'
+        },
+        d: {
+          'tink_core': '<1.2.0'
+        },
+        e: {
+          'tink_core': '<1.2.0'
+        },
+        r: {
+          'tink_core': '*'
         }
       }
     }
@@ -30,7 +43,7 @@ class RunTests {
           lock.write().handle(function(_) {
             trace('$lock');
           });
-        case Failure(e): trace(e);
+        case Failure(e): Sys.println(e);
       });
      #if tink_runloop }); #end
   }

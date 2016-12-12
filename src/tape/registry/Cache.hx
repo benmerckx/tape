@@ -32,20 +32,39 @@ class Cache implements RegistryBase {
     }
 
     public function versions(name): Stream<SemVer> {
-        if (cache.versions.exists(name))
-            return cache.versions.get(name).iterator();
         var cached = [], versions = registry.versions(name);
-        return function() {
-            return versions.next().map(function(step) return switch step {
-                case Data(version):
-                    cached.push(version);
-                    Data(version);
-                case End:
-                    cache.versions.set(name, cached);
-                    End;
-                default: step;
-            });
-        }
+        if (!cache.versions.exists(name))
+            cache.versions.set(name, []);
+        return (cache.versions.get(name).iterator(): Stream<SemVer>) ... (
+            function() {
+                var list = cache.versions.get(name);
+                function next()
+                    return versions.next().flatMap(function(step) return switch step {
+                        case Data(version):
+                            if (cached.indexOf(version) > -1) {
+                                next();
+                            } else {
+                                cached.push(version);
+                                list.push(version);
+                                Future.sync(Data(version));
+                            }
+                        default: Future.sync(step);
+                    });
+                return next();
+            }
+        : Stream<SemVer>);
+    }
+
+    public static function fromLock(lock: Lock, registry: Registry) {
+        var cached = new Cache(registry);
+        inline function fill(dependencies: Map<String, Manifest>)
+            for (dependency in dependencies) {
+                cached.cache.manifest.set(dependency.key(), dependency);
+                cached.cache.manifest.set(dependency.key(), dependency);
+            }
+        fill(lock.dependencies);
+        for (reel in lock.reels) fill(reel);
+        return cached;
     }
 
 }

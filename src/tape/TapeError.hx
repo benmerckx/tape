@@ -1,6 +1,7 @@
 package tape;
 
 using tink.CoreApi;
+using StringTools;
 
 @:forward
 abstract PreviousErrors(Array<Error>) from Array<Error> {
@@ -13,15 +14,23 @@ abstract PreviousErrors(Array<Error>) from Array<Error> {
 
 class TapeError extends TypedError<PreviousErrors> {
 
+    override function printPos()
+        return pos.className.split('.').pop()+'.'+pos.methodName+':'+pos.lineNumber;
+
     override public function toString() {
+        function pad(amount: Int)
+            return [for (_ in 0 ... amount+1) ''].join(' ');
+        function msg(e: Error)
+            return '${e.message} \u001b[94m@ ${e.printPos()} \x1b[0m';
+        function prev(errors: PreviousErrors, level: Int) {
+            if (errors == null) return [];
+            var response = [];
+            for (error in errors)
+                response = response.concat([pad(level)+'- '+msg(error)].concat(prev(cast error.data, level+1)));
+            return response;
+        }
         return 
-            '\n> $message' + 
-            '\n@ '+printPos() +
-            if (data != null) [
-                for (err in data)
-                    err.toString()
-            ].join('\n') 
-            else '';
+            '> '+msg(this) + '\n' + prev(data, 1).join('\n');
     }
 
     public static function create(?code: Int, message: String, ?previous: PreviousErrors, ?pos: haxe.PosInfos): Error {
