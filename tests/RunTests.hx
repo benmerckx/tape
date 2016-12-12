@@ -10,7 +10,7 @@ class RunTests {
   static var sample: Dynamic = {
     tape: {
       dependencies: {
-        monsoon: '*'
+        tink_io: '*'
       }
     }
   };
