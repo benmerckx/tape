@@ -12,5 +12,8 @@
 -cp lib/tink_priority/src
 
 -cp lib/tink_runloop/src
+-D tink_runloop
 -cp lib/tink_concurrent/src
 -D concurrent
+
+-D haxeJSON

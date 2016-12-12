@@ -49,4 +49,8 @@ abstract Dependency(DependencyData) from DependencyData {
                 throw 'todo';
         }
 
+    @:to
+    public function toString()
+        return this.name+'@'+this.source;
+
 }

@@ -55,7 +55,6 @@ class Haxelib implements RegistryBase {
         return (Future.lazy(fetchVersions.bind(name)): Promise<Stream<SemVer>>);  
     
     function fetchVersions(name): Stream<SemVer> {
-        trace('fetch versions');
         var packer = new Serializer();
 		packer.serialize(['api', 'infos']);
 		packer.serialize([name]);

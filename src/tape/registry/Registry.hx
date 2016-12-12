@@ -37,7 +37,7 @@ class ConcatRegistry implements RegistryBase {
                 part.versions(name)
         ]);
 
-    public function manifest(name: String, version: SemVer): Promise<Manifest> {
+    public function manifest(name: String, version: SemVer): Promise<Manifest>
         return Future.async(function(done) {
             var remaining = parts.copy();
             function next() {
@@ -52,5 +52,4 @@ class ConcatRegistry implements RegistryBase {
             }
             next();
         });
-    }
 }

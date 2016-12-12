@@ -42,7 +42,7 @@ abstract Manifest(ManifestData) from ManifestData {
             main: None
         }
 
-    public function resolveLock(): Promise<Lock> {
+    public function lock(): Promise<Lock> {
         var tasks = [], results = [];
         tasks.push({
             name: null, 
@@ -133,5 +133,14 @@ abstract Manifest(ManifestData) from ManifestData {
             default: 
                 Failure(TapeError.create('Could not read manifest file "$path"'));
         });
+
+    @:to
+    public function toString()
+        return 
+            [this.name+'@'+this.version]
+            .concat([
+                for (dependency in this.dependencies) 
+                    ' -'+dependency.toString()
+            ]).join('\n');
 
 }
