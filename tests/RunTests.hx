@@ -11,32 +11,31 @@ class RunTests {
     tape: {
       reels: {
         two: {
-          'tink_core': '<1.4.0'
+          'ufront': ''
         },
         a: {
-          'tink_core': '<1.2.0'
+          'ufront': ''
         },
         b: {
-          'tink_core': '<1.2.0'
+          'ufront': ''
         },
         c: {
-          'tink_core': '>1.5.0'
+          'ufront': ''
         },
         d: {
-          'tink_core': '<1.2.0'
+          'ufront': ''
         },
         e: {
-          'tink_core': '<1.2.0'
+          'ufront': ''
         },
         r: {
-          'tink_core': '*'
+          'ufront': ''
         }
       }
     }
   };
 
   static function main() {
-    #if tink_runloop @:privateAccess tink.RunLoop.create(function () { #end
       var manifest = Manifest.fromJsonSchema(sample, 'testje').sure();
       manifest.lock().handle(function (res) switch res {
         case Success(lock): 
@@ -45,7 +44,6 @@ class RunTests {
           });
         case Failure(e): Sys.println(e);
       });
-     #if tink_runloop }); #end
   }
   
 }

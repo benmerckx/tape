@@ -57,26 +57,10 @@ abstract Manifest(ManifestData) from ManifestData {
                 solver: new Solver(this.reels.get(reel).concat(this.dependencies))
             });
         for (task in tasks) {
-            #if tink_runloop
-            var worker = tink.RunLoop.current.createSlave();
-            results.push(Future.flatten(
-                tink.RunLoop.current.delegate(function() {
-                    var trigger = Future.trigger();
-                    task.solver.solve().handle(function(result) {
-                        trigger.trigger({
-                            name: task.name,
-                            versions: result
-                        });
-                    });
-                    return trigger.asFuture();
-                }, worker)
-            ));
-            #else
             results.push((task.solver.solve(): Surprise<Map<String, Manifest>, Error>).map(function(result) return {
                 name: task.name,
                 versions: result
             }));
-            #end
         }
         
         return Future.ofMany(results).map(function(response) {

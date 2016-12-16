@@ -29,7 +29,7 @@ class Haxelib implements RegistryBase {
                 GET, host, 
                 '/p/$name/$version/raw-files/haxelib.json'
             ), ''
-        ); 
+        );
         return http.request(request).flatMap(function (response) {
             // This library doesn't contain a haxelib.json file, not at the root anyway
             // Should be okay as the examples I've seen don't list any dependencies (eg. hxcpp)

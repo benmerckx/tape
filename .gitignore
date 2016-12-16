@@ -1,3 +1,5 @@
 /.vscode
 /bin
 /haxelib.lock
+/dump
+/backup
