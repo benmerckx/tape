@@ -29,40 +29,49 @@ abstract Reporter(ReporterInterface) from ReporterInterface {
     }
 
     public static function fail(e: Error) {
-        StdOutPrinter.clear();
-        Sys.print('$e');
-        Sys.exit(e.code);
+        tink.RunLoop.current.work(function() {
+            StdOutPrinter.clear();
+            Sys.print('$e');
+            Sys.exit(e.code);
+        });
     }
 
     public static function success(e: String) {
-        StdOutPrinter.clear(true);
-        var diff = Date.now().getTime() - @:privateAccess StdOutPrinter.start;
-        Sys.print('> $e \u001b[94m${Std.int(diff/1000)}s\x1b[0m');
+        tink.RunLoop.current.work(function() {
+            StdOutPrinter.clear(true);
+            var diff = Date.now().getTime() - @:privateAccess StdOutPrinter.start;
+            Sys.print('> $e \x1b[94m${Std.int(diff/1000)}s\x1b[0m\n');
+        });
     }
 
 }
 
 class StdOutPrinter {
 
+    static var MOVE_UP = ofHex('1b5b3141');
+    static var CLEAR_LINE = ofHex('1b5b304b');
     static var last: Report;
     static var start = Date.now().getTime();
 
+    static function ofHex(str: String): String
+        return haxe.crypto.BaseCode.decode(str, "0123456789abcdef").toString();
+
     public static function print(report: Report) {
-        if (last != null) clear(last.name != report.name);
-        Sys.println(toString(report));
-        last = report;
+        tink.RunLoop.current.work(function() {
+            if (last != null) clear(last.name != report.name);
+            Sys.println(toString(report));
+            last = report;
+        });
     }
 
     public static function clear(markAsDone = false) {
         if (last == null) return;
         var representation = toString(last);
         var lines = representation.split('\n').length;
-        for (i in 0 ... lines) {
-            Sys.print('\u001b[2K\r');
-            Sys.print('\u001b[#A');
-        }
+        for (i in 0 ... lines)
+            Sys.print(CLEAR_LINE+MOVE_UP);
         if (markAsDone)
-            Sys.println(header(last.name)+' \u001b[94mdone\x1b[0m');
+            Sys.println(header(last.name)+' \x1b[94mdone\x1b[0m');
     }
 
     static function header(name: String)

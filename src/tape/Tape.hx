@@ -22,6 +22,12 @@ class Tape extends CommandLine {
         d.dispatch(new Add());
     }
 
+    /** Install dependencies **/
+    public function install(d: Dispatch) {
+        preventDefault();
+        d.dispatch(new Install());
+    }
+
     public function runDefault() {
         Sys.println(showUsage());
         Sys.exit(0);
@@ -40,7 +46,9 @@ class Tape extends CommandLine {
                         )
         });
         try 
-            new Dispatch(args).dispatch(new Tape())
+            @:privateAccess tink.RunLoop.create(function()
+                new Dispatch(args).dispatch(new Tape())
+            )
         catch (e: Error)
             Reporter.fail(e);
     }

@@ -2,9 +2,9 @@ package tape;
 
 import asys.io.File;
 import haxe.DynamicAccess;
-import haxe.Json;
 import semver.SemVer;
 import tape.solver.Solver;
+import tape.Json;
 
 using tink.CoreApi;
 
@@ -46,13 +46,13 @@ abstract Manifest(ManifestData) from ManifestData {
         return this.name+'@'+this.version;
 
     public function write(): Promise<Noise>
-        return File.saveContent(FILE, tape.Json.stringify(toJson()));
+        return File.saveContent(FILE, Json.stringify(toJson()));
 
     public function addDependency(dependency: Dependency)
         this.dependencies.push(dependency);
 
     public function hash()
-        return haxe.crypto.Md5.encode(tape.Json.stringify(toJson(false)));
+        return haxe.crypto.Md5.encode(Json.stringify(toJson(false)));
 
     public function lock(reporter: Reporter, previous: Option<Lock>): Promise<Lock> {
         var tasks = [], results = [];
@@ -100,7 +100,7 @@ abstract Manifest(ManifestData) from ManifestData {
 
     public function toJson(metadata = true) {
         var data: Map<String, Any> = 
-            if (metadata) Reflect.copy(this.metadata)
+            if (metadata) [for (key in this.metadata.keys()) key => this.metadata.get(key)];
             else new Map();
         data.set('name', this.name);
         data.set('version', (this.version: String));
@@ -122,7 +122,11 @@ abstract Manifest(ManifestData) from ManifestData {
         return Error.catchExceptions(function(): ManifestData
             return {
                 name: 
-                    if (data.name != null) data.name
+                    if (data.name != null) 
+                        if (~/^[A-Za-z0-9_.-]+$/.match(data.name))
+                            data.name
+                        else
+                            throw 'Name field must be alphanumeric'
                     else if (name != null) name
                     else throw 'Name field is empty',
                 version: 

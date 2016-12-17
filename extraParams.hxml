@@ -13,7 +13,10 @@
 -cp lib/mcli
 -D use_rtti_doc
 
-#-cp lib/tink_runloop/src
-#-D tink_runloop
-#-cp lib/tink_concurrent/src
+-cp lib/tink_runloop/src
+-D tink_runloop
+-cp lib/tink_concurrent/src
 #-D concurrent
+
+-dce full
+-D haxeJSON

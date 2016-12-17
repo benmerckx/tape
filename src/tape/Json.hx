@@ -1,6 +1,11 @@
 package tape;
 
+import haxe.DynamicAccess;
+
 class Json extends haxe.format.JsonPrinter {
+
+    public static function parse(input: String): Dynamic
+        return haxe.format.JsonParser.parse(input);
 
 	public static inline function stringify(value: Dynamic): String {
 		var printer = new Json(null, '  ');

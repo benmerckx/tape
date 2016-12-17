@@ -16,14 +16,7 @@ class RunTests {
   }
 
   static function main() {
-      var manifest = Manifest.fromJsonSchema(sample, 'testje').sure();
-      manifest.lock().handle(function (res) switch res {
-        case Success(lock): 
-          lock.write().handle(function(_) {
-            trace('$lock');
-          });
-        case Failure(e): Sys.println(e);
-      });
+      // todo
   }
   
 }

@@ -29,10 +29,14 @@ abstract Lock(LockData) from LockData {
     public function write(): Promise<Noise>
         return File.saveContent(FILE, tape.Json.stringify(toJson()));
 
-    public function install(reporter: Reporter): Promise<Noise> {
-        reporter.report({completion: 1});
-        return Future.sync(Noise);
-    }
+    public function install(reporter: Reporter): Promise<Noise>
+        return new Installer(this, reporter).install();
+
+    public function allDependencies(): Array<Manifest>
+        return Lambda.array(this.dependencies).concat(
+            Lambda.fold(this.reels, function(reel: Map<String, Manifest>, prev: Array<Manifest>) 
+                return prev.concat(Lambda.array(reel)), []
+        ));
 
     function dependenciesJson(dependencies: Dependencies)
         return [for (manifest in dependencies)

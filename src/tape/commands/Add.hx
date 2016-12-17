@@ -11,7 +11,8 @@ class Add extends Command {
 
     public static function run(lib: String, source: Option<Source>) {
         var manifest: Manifest, version: SemVer, lock: Lock;
-        return Manifest.fromFile(Manifest.FILE, Path.directory(Sys.getCwd()))
+        var name = Path.normalize(Sys.getCwd()).split('/').pop();
+        return Manifest.fromFile(Manifest.FILE, name)
         .next(function (res) {
             manifest = res;
             return (Lock.fromFile(Lock.FILE, manifest): Surprise<Lock, Error>).map(

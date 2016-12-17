@@ -16,12 +16,12 @@ using tink.CoreApi;
 class Haxelib implements RegistryBase {
 
     public static var instance(default, null): Registry = new Haxelib();
-    static var host = new Host('lib.haxe.org', 443);
+    public static var host = new Host('lib.haxe.org', 443);
 
     var http: Client;
 
     function new()
-        http = new SecureStdClient();
+        http = new SecureTcpClient();
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
         var request = new OutgoingRequest(
@@ -68,7 +68,9 @@ class Haxelib implements RegistryBase {
             return response.body.all().map(function(res) return switch res {
                 case Success(bytes):
                     if (response.header.statusCode != 200)
-                        return Failure(TapeError.create(response.header.statusCode, bytes.toString()));
+                        return Failure(TapeError.create(response.header.statusCode, 
+                            'Failed to get versions [${response.header.statusCode}]: '+bytes.toString()
+                        ));
                     Error.catchExceptions(function() {
                         var buf = bytes.toString();
                         if (buf.substr(0, 3) != 'hxr')

@@ -20,7 +20,7 @@ class TapeError extends TypedError<PreviousErrors> {
         function pad(amount: Int)
             return [for (_ in 0 ... amount+1) ''].join(' ');
         function msg(e: Error)
-            return '${e.message} \u001b[94m@ ${e.printPos()} \x1b[0m';
+            return '${e.message} \x1b[94m@ ${e.printPos()} \x1b[0m';
         function prev(errors: PreviousErrors, level: Int) {
             if (errors == null) return [];
             var response = [];

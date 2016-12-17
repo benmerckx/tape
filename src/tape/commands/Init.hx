@@ -19,7 +19,7 @@ class Init extends Command {
         });
     }
 
-    public function runDefault(lib: String, ?source: Option<Source>)
+    public function runDefault()
         run().handle(report);
 
 }
