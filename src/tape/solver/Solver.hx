@@ -16,10 +16,13 @@ class Solver {
     public function new(dependencies: Array<Dependency>)
         remaining = dependencies.copy();
     
-    public function solve(): Promise<Map<String, Manifest>>
+    public function solve(reporter: Reporter): Promise<Map<String, Manifest>>
         return 
             (advance: Stream<Manifest>)
             .forEach(function (manifest) {
+                reporter.report({
+                    description: 'Resolved "${manifest.key()}"'
+                });
                 return true;
             }).map(function (res) return switch res {
                 case Success(_):

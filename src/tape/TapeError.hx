@@ -1,7 +1,6 @@
 package tape;
 
 using tink.CoreApi;
-using StringTools;
 
 @:forward
 abstract PreviousErrors(Array<Error>) from Array<Error> {
@@ -37,6 +36,10 @@ class TapeError extends TypedError<PreviousErrors> {
         var error = new TapeError(message, pos);
         error.data = previous;
         return cast error;
+    }
+
+    public static function fromError(e: Error) {
+        return new TapeError(e.code, e.message, e.pos);
     }
 
 }

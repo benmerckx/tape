@@ -20,8 +20,6 @@ typedef JsonSchema = {
         ?dependencies: DynamicAccess<String>,
         ?reels: DynamicAccess<DynamicAccess<String>>
     };
-	@:optional 
-    var main: String;
 }
 
 typedef ManifestData = {
@@ -29,23 +27,31 @@ typedef ManifestData = {
 	var version: SemVer;
 	var dependencies: Array<Dependency>;
     var reels: Map<String, Array<Dependency>>;
-	var main: Option<String>;
+	var metadata: Map<String, Any>;
 }
 
 @:forward
 abstract Manifest(ManifestData) from ManifestData {
 
+    public static var FILE = 'haxelib.json';
+
     public function new(name: String, version: SemVer)
         this = {
             name: name, version: version, 
             dependencies: [], reels: new Map(), 
-            main: None
+            metadata: new Map()
         }
 
     public function key()
         return this.name+'@'+this.version;
 
-    public function lock(): Promise<Lock> {
+    public function write(): Promise<Noise>
+        return File.saveContent(FILE, tape.Json.stringify(toJson()));
+
+    public function addDependency(dependency: Dependency)
+        this.dependencies.push(dependency);
+
+    public function lock(reporter: Reporter): Promise<Lock> {
         var tasks = [], results = [];
         tasks.push({
             name: null, 
@@ -57,7 +63,13 @@ abstract Manifest(ManifestData) from ManifestData {
                 solver: new Solver(this.reels.get(reel).concat(this.dependencies))
             });
         for (task in tasks) {
-            results.push((task.solver.solve(): Surprise<Map<String, Manifest>, Error>).map(function(result) return {
+            results.push(
+                (task.solver.solve(reporter.task(
+                    if (task.name == null) 'Resolving dependencies'
+                    else 'Resolving reel "${task.name}"'
+                    ))
+                    : Surprise<Map<String, Manifest>, Error>)
+            .map(function(result) return {
                 name: task.name,
                 versions: result
             }));
@@ -77,6 +89,24 @@ abstract Manifest(ManifestData) from ManifestData {
                 return Failure(TapeError.create('Could not lock down dependencies for "${this.name}"', errors));
             return Success(lock);
         });
+    }
+
+    function dependenciesJson(dependencies: Array<Dependency>)
+        return [for (dependency in dependencies)
+            dependency.name => '${dependency.source}'
+        ];
+
+    public function toJson() {
+        var data = Reflect.copy(this.metadata);
+        data.set('name', this.name);
+        data.set('version', (this.version: String));
+        data.set('tape', {
+            dependencies: dependenciesJson(this.dependencies),
+            reels: [for (reel in this.reels.keys())
+                reel => dependenciesJson(this.reels.get(reel))
+            ]
+        });
+        return data;
     }
 
     public static function fromJsonSchema(data: JsonSchema, ?name: String): Outcome<Manifest, Error> {
@@ -105,7 +135,13 @@ abstract Manifest(ManifestData) from ManifestData {
                         for(reel in data.tape.reels.keys())
                             reel => extract(data.tape.reels.get(reel))
                     ] else new Map(),
-                main: data.main == null ? None : Some(data.main)
+                metadata: {
+                    var fields: DynamicAccess<Any> = cast data;
+                    var other = fields.keys().filter(function(key) 
+                        return ['name', 'version', 'tape'].indexOf(key) == -1
+                    );
+                    [for (key in other) key => fields.get(key)];
+                }
             }
         );
     }

@@ -10,6 +10,8 @@
 -cp lib/tink_tcp/src
 -D tink_tcp
 -cp lib/tink_priority/src
+-cp lib/mcli
+-D use_rtti_doc
 
 #-cp lib/tink_runloop/src
 #-D tink_runloop

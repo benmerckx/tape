@@ -9,31 +9,11 @@ class RunTests {
 
   static var sample: Dynamic = {
     tape: {
-      reels: {
-        two: {
-          'ufront': ''
-        },
-        a: {
-          'ufront': ''
-        },
-        b: {
-          'ufront': ''
-        },
-        c: {
-          'ufront': ''
-        },
-        d: {
-          'ufront': ''
-        },
-        e: {
-          'ufront': ''
-        },
-        r: {
-          'ufront': ''
-        }
+      dependencies: {
+        ufront: "*"
       }
     }
-  };
+  }
 
   static function main() {
       var manifest = Manifest.fromJsonSchema(sample, 'testje').sure();

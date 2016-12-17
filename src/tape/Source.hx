@@ -25,7 +25,7 @@ abstract Source(SourceType) from SourceType {
     @:to
     public function toString()
         return switch this {
-            case Root(manifest): manifest.name+'@'+manifest.version;
+            case Root(manifest): manifest.key();
             case Versioned(range, _): '$range';
             case Pinned: 'pinned';
         }

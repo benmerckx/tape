@@ -14,6 +14,8 @@ typedef LockData = {
 @:forward
 abstract Lock(LockData) from LockData {
 
+    public static var FILE = 'haxelib.lock';
+
     public function new()
         this = {
             dependencies: new Map(),
@@ -21,14 +23,18 @@ abstract Lock(LockData) from LockData {
         }
 
     public function write(): Promise<Noise>
-        return File.saveContent('haxelib.lock', haxe.Json.stringify(toJson(), '  '));
+        return File.saveContent(FILE, tape.Json.stringify(toJson()));
+
+    public function install(): Promise<Noise> {
+        
+        return null;
+    }
 
     function dependenciesJson(dependencies: Dependencies)
         return [for (manifest in dependencies)
             manifest.name => '${manifest.version}'
         ];
 
-    // Todo: use ordered maps
     function toJson()
         return {
             dependencies: dependenciesJson(this.dependencies),

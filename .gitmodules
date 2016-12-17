@@ -38,3 +38,6 @@
 [submodule "lib/tink_concurrent"]
 	path = lib/tink_concurrent
 	url = https://github.com/haxetink/tink_concurrent
+[submodule "lib/mcli"]
+	path = lib/mcli
+	url = https://github.com/waneck/mcli
