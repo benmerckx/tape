@@ -51,7 +51,10 @@ abstract Manifest(ManifestData) from ManifestData {
     public function addDependency(dependency: Dependency)
         this.dependencies.push(dependency);
 
-    public function lock(reporter: Reporter): Promise<Lock> {
+    public function hash()
+        return haxe.crypto.Md5.encode(tape.Json.stringify(toJson(false)));
+
+    public function lock(reporter: Reporter, previous: Option<Lock>): Promise<Lock> {
         var tasks = [], results = [];
         tasks.push({
             name: null, 
@@ -62,21 +65,20 @@ abstract Manifest(ManifestData) from ManifestData {
                 name: reel, 
                 solver: new Solver(this.reels.get(reel).concat(this.dependencies))
             });
-        for (task in tasks) {
+        for (task in tasks)
             results.push(
                 (task.solver.solve(reporter.task(
                     if (task.name == null) 'Resolving dependencies'
                     else 'Resolving reel "${task.name}"'
-                    ))
-                    : Surprise<Map<String, Manifest>, Error>)
-            .map(function(result) return {
-                name: task.name,
-                versions: result
-            }));
-        }
+                ), previous): Surprise<Map<String, Manifest>, Error>)
+                .map(function(result) return {
+                    name: task.name,
+                    versions: result
+                })
+            );
         
         return Future.ofMany(results).map(function(response) {
-            var lock = new Lock();
+            var lock = new Lock(this);
             var errors = [];
             for (result in response)
                 switch result.versions {
@@ -96,8 +98,10 @@ abstract Manifest(ManifestData) from ManifestData {
             dependency.name => '${dependency.source}'
         ];
 
-    public function toJson() {
-        var data = Reflect.copy(this.metadata);
+    public function toJson(metadata = true) {
+        var data: Map<String, Any> = 
+            if (metadata) Reflect.copy(this.metadata)
+            else new Map();
         data.set('name', this.name);
         data.set('version', (this.version: String));
         data.set('tape', {
@@ -154,7 +158,7 @@ abstract Manifest(ManifestData) from ManifestData {
                 catch (e: Dynamic)
                     Failure(TapeError.create('Could not parse manifest file "$path"', TapeError.create('$e')));
             default: 
-                Failure(TapeError.create('Could not read manifest file "$path"'));
+                Failure(TapeError.create('Could not read manifest file "$path", use tape init to create one'));
         });
 
     @:to

@@ -31,10 +31,14 @@ class Cache implements RegistryBase {
         return cache.manifest.get(key);
     }
 
-    public function versions(name): Stream<SemVer> {
+    function versionCache(name) {
         if (!cache.versions.exists(name)) 
             cache.versions.set(name, {buffered: [], original: registry.versions(name)});
-        var cached = cache.versions.get(name);
+        return cache.versions.get(name);
+    }
+
+    public function versions(name): Stream<SemVer> {
+        var cached = versionCache(name);
         var progressed = 0;
         return function() {
             if (cached.buffered.length == progressed)
@@ -45,13 +49,17 @@ class Cache implements RegistryBase {
 
     public static function fromLock(lock: Lock, registry: Registry) {
         var cached = new Cache(registry);
-        /*inline function fill(dependencies: Map<String, Manifest>)
-            for (dependency in dependencies) {
-                cached.cache.manifest.set(dependency.key(), dependency);
-                cached.cache.manifest.set(dependency.key(), dependency);
+        function addToVersions(manifest: Manifest) {
+            var cache = cached.versionCache(manifest.name);
+            cache.buffered.push(Future.sync(Data(manifest.version)));
+        }
+        function fill(dependencies: Map<String, Manifest>)
+            for (manifest in dependencies) {
+                cached.cache.manifest.set(manifest.key(), manifest);
+                addToVersions(manifest);
             }
         fill(lock.dependencies);
-        for (reel in lock.reels) fill(reel);*/
+        for (reel in lock.reels) fill(reel);
         return cached;
     }
 

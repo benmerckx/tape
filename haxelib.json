@@ -1,12 +1,13 @@
 {
-  "name": "tape",
-  "license": "MIT",
-  "tags": [],
   "classPath": "src",
   "contributors": [
     "benmerckx"
   ],
+  "license": "MIT",
+  "main": "tape.build.TapeInterp",
+  "name": "tape",
   "releasenote": "initial release",
-  "version": "0.0.0",
-  "url": "https://github.com/benmerckx/tape/"
+  "tags": [],
+  "url": "https://github.com/benmerckx/tape/",
+  "version": "0.0.0"
 }

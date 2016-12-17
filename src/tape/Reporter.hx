@@ -36,7 +36,8 @@ abstract Reporter(ReporterInterface) from ReporterInterface {
 
     public static function success(e: String) {
         StdOutPrinter.clear(true);
-        Sys.print('> $e');
+        var diff = Date.now().getTime() - @:privateAccess StdOutPrinter.start;
+        Sys.print('> $e \u001b[94m${Std.int(diff/1000)}s\x1b[0m');
     }
 
 }
@@ -44,6 +45,7 @@ abstract Reporter(ReporterInterface) from ReporterInterface {
 class StdOutPrinter {
 
     static var last: Report;
+    static var start = Date.now().getTime();
 
     public static function print(report: Report) {
         if (last != null) clear(last.name != report.name);
@@ -52,6 +54,7 @@ class StdOutPrinter {
     }
 
     public static function clear(markAsDone = false) {
+        if (last == null) return;
         var representation = toString(last);
         var lines = representation.split('\n').length;
         for (i in 0 ... lines) {

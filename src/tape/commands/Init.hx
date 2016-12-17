@@ -1,26 +1,25 @@
 package tape.commands;
 
-import mcli.CommandLine;
 import tape.Manifest;
 import haxe.io.Path;
 import asys.FileSystem;
 
 using tink.CoreApi;
 
-class Init extends CommandLine {
+class Init extends Command {
 
-    public function runDefault() {
-        FileSystem.exists(Manifest.FILE).handle(function(exists) {
+    public static function run() {
+        return FileSystem.exists(Manifest.FILE).flatMap(function(exists) {
             if (exists)
-                return Reporter.fail(TapeError.create('Manifest file "${Manifest.FILE}" already exists'));
+                return Future.sync(Failure(TapeError.create('Manifest file "${Manifest.FILE}" already exists')));
             var name = Path.normalize(Sys.getCwd()).split('/').pop();
             var manifest = new Manifest(name, '0.0.0');
-            manifest.write()
-            .handle(function (res) switch res {
-                case Success(_): Reporter.success('Initialized "$manifest"');
-                case Failure(e): Reporter.fail(e);
-            });
+            return manifest.write()
+                .next(function (res) return 'Initialized "$manifest"');
         });
     }
+
+    public function runDefault(lib: String, ?source: Option<Source>)
+        run().handle(report);
 
 }

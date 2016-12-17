@@ -4,6 +4,7 @@ import semver.SemVer;
 import tape.Source;
 import tink.streams.Stream;
 import tink.streams.StreamStep;
+import tape.registry.Cache;
 
 using tink.CoreApi;
 
@@ -21,10 +22,14 @@ abstract Dependency(DependencyData) from DependencyData {
             source: source
         };
 
-    public function candidates(): Stream<Manifest>
+    public function candidates(lock: Option<Lock>): Stream<Manifest>
         return switch this.source {
             case Root(manifest): [manifest].iterator();
             case Versioned(range, registry):
+                registry = switch lock {
+                    case Some(lock): Cache.fromLock(lock, registry);
+                    case None: registry;
+                }
                 // The analyzer somehow fails if this.name is used in the closure
                 var name = this.name;
                 var versions = registry.versions(name)

@@ -7,6 +7,7 @@ import tape.Source;
 
 using tink.CoreApi;
 
+/** tape@0.0.0 **/
 class Tape extends CommandLine {
 
     /** Initialize tape in this directory **/
