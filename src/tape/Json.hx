@@ -1,7 +1,5 @@
 package tape;
 
-import haxe.DynamicAccess;
-
 class Json extends haxe.format.JsonPrinter {
 
     public static function parse(input: String): Dynamic

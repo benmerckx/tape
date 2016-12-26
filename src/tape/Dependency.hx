@@ -24,7 +24,6 @@ abstract Dependency(DependencyData) from DependencyData {
 
     public function candidates(lock: Option<Lock>): Stream<Manifest>
         return switch this.source {
-            case Root(manifest): [manifest].iterator();
             case Versioned(range, registry):
                 registry = switch lock {
                     case Some(lock): Cache.fromLock(lock, registry);
@@ -50,7 +49,7 @@ abstract Dependency(DependencyData) from DependencyData {
                             case End: Future.sync(End);
                             case Fail(e): Future.sync(Fail(e));
                         });
-            case Pinned: 
+            case Pinned(type, url): 
                 throw 'todo';
         }
 

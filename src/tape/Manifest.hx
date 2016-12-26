@@ -9,17 +9,14 @@ import tape.Json;
 using tink.CoreApi;
 
 typedef JsonSchema = {
-    @:optional 
-	var name: String;
-    @:optional 
-	var version: String;
-	@:optional 
-    var dependencies: DynamicAccess<String>;
-	@:optional 
-    var tape: {
+    ?name: String,
+    ?version: String,
+	?dependencies: DynamicAccess<String>,
+	?tape: {
         ?dependencies: DynamicAccess<String>,
         ?reels: DynamicAccess<DynamicAccess<String>>
-    };
+    }
+    // ...metadata...
 }
 
 typedef ManifestData = {
@@ -126,7 +123,7 @@ abstract Manifest(ManifestData) from ManifestData {
                         if (~/^[A-Za-z0-9_.-]+$/.match(data.name))
                             data.name
                         else
-                            throw 'Name field must be alphanumeric'
+                            throw 'Name field must be alphanumeric (including _.-)'
                     else if (name != null) name
                     else throw 'Name field is empty',
                 version: 

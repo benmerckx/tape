@@ -9,6 +9,9 @@ import tink.http.Request;
 import tink.http.Response;
 import tink.runloop.Worker;
 import tink.concurrent.Queue;
+import tink.http.Header;
+import haxe.zip.Reader;
+import asys.io.FileInput;
 
 using tink.CoreApi;
 
@@ -20,10 +23,37 @@ typedef DownloaderData = {
 @:forward
 abstract Downloader(DownloaderData) from DownloaderData {
 
+    function install(manifest: Manifest, path: String, next: Void -> Promise<Noise>): Promise<Noise> {
+        return Noise;/*
+        this.reporter.report({description: 'Installing "${manifest.key()}"'});
+        return (File.read(path): Promise<FileInput>)
+        .next(function(file): Promise<Noise> {
+            var entries;
+            try entries = Reader.readZip(file)
+            catch (e: Dynamic)
+                return TapeError.create('Could not unzip "${manifest.key()}"', TapeError.create('$e'));
+            function unzip(): Promise<Noise> {
+                var entry = entries.pop();
+                if (entry == null) return Noise;
+                this.reporter.report({description: 'Unzipping "${entry.fileName}"'});
+                return File.saveBytes(_, Reader.unzip(entry)).flatMap(function (res) return switch res {
+                    case Success(_): unzip();
+                    case Failure(e): Future.sync(Failure(TapeError.create('Could not unzip "${entry.fileName}"', e)));
+                });
+            }
+            return unzip();
+        });*/
+    }
+
     public function download(queue: Queue<Manifest>, http: Client, path: String): Promise<Noise> {
         function outgoing(url: String) 
             return new OutgoingRequest(
-                new OutgoingRequestHeader(GET, Haxelib.host, url), ''
+                new OutgoingRequestHeader(GET, Haxelib.host, url,
+                    [
+                        new HeaderField('connection', 'close'), 
+                        new HeaderField('content-length', '0')
+                    ]
+                ), ''
             );
 
         function next(): Promise<Noise> {
@@ -33,9 +63,8 @@ abstract Downloader(DownloaderData) from DownloaderData {
                 return Noise;
             }
             this.reporter.report({description: 'Downloading "${job.key()}"'});
-            var file = File.writeStream(Path.join([path, '${job.key()}.zip']));
-            var request = outgoing('/p/${job.name}/${job.version}/download/');
-
+            var zip = Path.join([path, '${job.key()}.zip']);
+            var file = File.writeStream(zip);
             function response(res: IncomingResponse): Promise<Noise> {
                 if (res.header.statusCode == 301) {
                     var location = res.header.byName('location').sure();
@@ -56,7 +85,7 @@ abstract Downloader(DownloaderData) from DownloaderData {
                         )
                     );
                 return res.body.pipeTo(file).flatMap(function (res): Promise<Noise> return switch res {
-                    case AllWritten: return next();
+                    case AllWritten: return next(); //return install(job, zip, next);
                     case SinkFailed(e): TapeError.create('Could not write to file', e);
                     case SinkEnded: TapeError.create('Could not write to file');
                     case SourceFailed(e): TapeError.create('Download interrupted', e);
@@ -115,7 +144,7 @@ class Installer {
         return HaxelibConfig.getGlobalRepositoryPath()
         .next(function (path) return Future.ofMany([
             for (downloader in downloaders)
-                downloader.download(queue, new SecureTcpClient(), path)
+                downloader.download(queue, new SecureTcpClient(false), path)
         ]));
     }
 

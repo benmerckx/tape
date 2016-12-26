@@ -4,7 +4,6 @@ import tink.streams.Stream;
 import tink.streams.StreamStep;
 import semver.SemVer;
 import tape.registry.Registry;
-import tink.streams.Accumulator;
 
 using tink.CoreApi;
 

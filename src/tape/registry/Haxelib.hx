@@ -10,6 +10,7 @@ import tink.http.Client;
 import tape.Manifest;
 import tink.streams.Stream;
 import tape.registry.Registry;
+import tink.io.IdealSource;
 
 using tink.CoreApi;
 
@@ -21,14 +22,18 @@ class Haxelib implements RegistryBase {
     var http: Client;
 
     function new()
-        http = new SecureTcpClient();
+        http = new SecureTcpClient(false);
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
         var request = new OutgoingRequest(
             new OutgoingRequestHeader(
                 GET, host, 
-                '/p/$name/$version/raw-files/haxelib.json'
-            ), ''
+                '/p/$name/$version/raw-files/haxelib.json',
+                [
+                    new HeaderField('connection', 'close'), 
+                    new HeaderField('content-length', '0')
+                ]
+            ), Empty.instance
         );
         return http.request(request).flatMap(function (response) {
             // This library doesn't contain a haxelib.json file, not at the root anyway
@@ -44,7 +49,8 @@ class Haxelib implements RegistryBase {
                         data = haxe.Json.parse(bytes.toString())
                     catch (e: Dynamic)
                         return Failure(TapeError.create('Could not parse manifest body', TapeError.create('$e')));
-                    return Manifest.fromJsonSchema(data);
+                    var manifest = Manifest.fromJsonSchema(data);
+                    return manifest;
                 default:
                     Failure(TapeError.create('Could not read response body'));
             });
@@ -61,20 +67,24 @@ class Haxelib implements RegistryBase {
         var request = new OutgoingRequest(
             new OutgoingRequestHeader(
                 GET, host, '/api/3.0/index.n?__x=$packer', 
-                [new HeaderField('x-haxe-remoting', '1')]
-            ), ''
+                [
+                    new HeaderField('x-haxe-remoting', '1'), 
+                    new HeaderField('connection', 'close'), 
+                    new HeaderField('content-length', '0')
+                ]
+            ), Empty.instance
         );
         return http.request(request).flatMap(function (response) {
             return response.body.all().map(function(res) return switch res {
                 case Success(bytes):
                     if (response.header.statusCode != 200)
                         return Failure(TapeError.create(response.header.statusCode, 
-                            'Failed to get versions [${response.header.statusCode}]: '+bytes.toString()
+                            'Failed to get versions: '+bytes.toString()
                         ));
                     Error.catchExceptions(function() {
                         var buf = bytes.toString();
                         if (buf.substr(0, 3) != 'hxr')
-                            throw 'Invalid response';
+                            throw buf;
                         var unpacker = new Unserializer(buf.substr(3));
                         var data: {versions: Array<{name: String}>} = unpacker.unserialize();
                         return [
@@ -83,7 +93,7 @@ class Haxelib implements RegistryBase {
                         ];
                     }, function (e) return TapeError.create('$e'));
                 default:
-                    Failure(TapeError.create('Could not read response body'));
+                    Failure(TapeError.create('Could not read response body ${response.header}'));
             });
         }).map(function(res) return switch res {
             case Success(versions):
