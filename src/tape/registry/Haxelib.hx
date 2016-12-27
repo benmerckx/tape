@@ -38,8 +38,9 @@ class Haxelib implements RegistryBase {
         return http.request(request).flatMap(function (response) {
             // This library doesn't contain a haxelib.json file, not at the root anyway
             // Should be okay as the examples I've seen don't list any dependencies (eg. hxcpp)
-            if (response.header.statusCode == 404)
-                return Future.sync(Success(new Manifest(name, version)));
+            if (response.header.statusCode == 404) {
+                return Future.sync(Success(new Manifest(name, version, downloadUrl(name, version))));
+            }
             if (response.header.statusCode != 200)
                 return Future.sync(Failure(TapeError.create('Could not load manifest')));
             return response.body.all().map(function(res) return switch res {
@@ -49,13 +50,16 @@ class Haxelib implements RegistryBase {
                         data = haxe.Json.parse(bytes.toString())
                     catch (e: Dynamic)
                         return Failure(TapeError.create('Could not parse manifest body', TapeError.create('$e')));
-                    var manifest = Manifest.fromJsonSchema(data);
-                    return manifest;
+                    data.location = downloadUrl(name, version);
+                    return Manifest.fromJsonSchema(data);
                 default:
                     Failure(TapeError.create('Could not read response body'));
             });
         });
     }
+
+    public static function downloadUrl(name: String, version: String)
+        return 'https://${host.name}/p/$name/$version/download';
 
     public function versions(name): Stream<SemVer>
         return (Future.lazy(fetchVersions.bind(name)): Promise<Stream<SemVer>>);  
@@ -79,12 +83,12 @@ class Haxelib implements RegistryBase {
                 case Success(bytes):
                     if (response.header.statusCode != 200)
                         return Failure(TapeError.create(response.header.statusCode, 
-                            'Failed to get versions: '+bytes.toString()
+                            'Failed to get versions'//+bytes.toString()
                         ));
                     Error.catchExceptions(function() {
                         var buf = bytes.toString();
                         if (buf.substr(0, 3) != 'hxr')
-                            throw buf;
+                            throw buf.length < 50 ? buf : 'Invalid hxr';
                         var unpacker = new Unserializer(buf.substr(3));
                         var data: {versions: Array<{name: String}>} = unpacker.unserialize();
                         return [

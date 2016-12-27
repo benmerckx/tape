@@ -49,8 +49,8 @@ abstract Dependency(DependencyData) from DependencyData {
                             case End: Future.sync(End);
                             case Fail(e): Future.sync(Fail(e));
                         });
-            case Pinned(type, url): 
-                throw 'todo';
+            case Pinned(location): 
+                Stream.failure(TapeError.create('todo'));
         }
 
     @:to

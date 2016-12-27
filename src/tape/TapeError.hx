@@ -38,8 +38,16 @@ class TapeError extends TypedError<PreviousErrors> {
         return cast error;
     }
 
-    public static function fromError(e: Error) {
-        return new TapeError(e.code, e.message, e.pos);
-    }
+    public static function fromAny(e: Any, ?pos: haxe.PosInfos)
+        return if (Std.is(e, TapeError))
+            e
+        else if (Std.is(e, Error))
+            fromError(e)
+        else
+            create('$e', pos);
+
+    public static function fromError(e: Error)
+        return if (Std.is(e, TapeError)) e
+        else new TapeError(e.code, e.message, e.pos);
 
 }

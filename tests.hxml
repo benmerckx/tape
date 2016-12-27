@@ -1,2 +1,3 @@
+lib/vendor.hxml
 -cp tests
 -main RunTests

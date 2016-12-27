@@ -4,18 +4,12 @@ import semver.RangeSet;
 import tape.registry.*;
 import tink.Url;
 
+using tink.CoreApi;
 using StringTools;
-
-@:enum
-abstract PinnedType(String) to String {
-    var Git = 'git:';
-    var Tarball = '';
-    var File = 'file:';
-}
 
 enum SourceType {
     Versioned(range: RangeSet, registry: Registry);
-    Pinned(type: PinnedType, url: Url);
+    Pinned(location: Location);
 }
 
 abstract Source(SourceType) from SourceType {
@@ -24,21 +18,19 @@ abstract Source(SourceType) from SourceType {
    
     @:from
     static function fromString(str: String): Source
-        return if (str.startsWith(Git))
-            Pinned(Git, Url.parse(str.substr((Git: String).length)))
-        else if (str.startsWith(File))
-            Pinned(File, Url.parse(str.substr((File: String).length)))
-        else
+        return try
+            Pinned(str)
+        catch (e1: Any)
             try
-                Pinned(Tarball, Url.parse(str))
-            catch (e: Dynamic)
-                Versioned((str: RangeSet), registry);
+                Versioned(str, registry)
+            catch (e2: Error)
+                throw TapeError.create('Could not parse source "$str"', [TapeError.fromAny(e1), e2]);
 
     @:to
     public function toString()
         return switch this {
             case Versioned(range, _): '$range';
-            case Pinned(type, url): '$type$url';
+            case Pinned(location): '$location';
         }
 
 }

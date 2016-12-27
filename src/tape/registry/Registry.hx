@@ -39,11 +39,11 @@ class ConcatRegistry implements RegistryBase {
 
     public function manifest(name: String, version: SemVer): Promise<Manifest>
         return Future.async(function(done) {
-            var remaining = parts.copy();
+            var remaining = parts.iterator();
             function next() {
-                if (remaining.length == 0)
+                if (!remaining.hasNext())
                     return done(Failure(TapeError.create('Could not find version for "$name"')));
-                remaining.shift()
+                remaining.next()
                 .manifest(name, version)
                 .handle(function (res) switch res {
                     case Success(manifest): done(Success(manifest));

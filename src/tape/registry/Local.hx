@@ -6,6 +6,9 @@ import asys.FileSystem;
 import semver.SemVer;
 import tink.streams.Stream;
 import tape.config.HaxelibConfig;
+import tape.registry.Haxelib;
+import tink.Url;
+import tape.Location;
 
 using tink.CoreApi;
 using StringTools;
@@ -17,11 +20,34 @@ class Local implements RegistryBase {
     function new() {}
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
+        var local: String;
+        var proper: String;
+        var deprecated: String;
         return HaxelibConfig.getGlobalRepositoryPath()
             .next(function(dir) {
+                var main = Path.join([dir, name]);
+                return Future.ofMany([
+                    FileSystem.exists(proper = Path.join([main, version])),
+                    FileSystem.exists(deprecated = Path.join([main, version.toString().replace('.', ',')]))
+                ]);
+            }).next(function(exists: Array<Bool>)
+                return switch [exists[0], exists[1]] {
+                    case [true, _]: proper;
+                    case [_, true]: deprecated;
+                    default: TapeError.create('No local manifest found');
+                }
+            ).next(function(path: String)
                 return Manifest.fromFile(Path.join([
-                    dir, name, version.toString().replace('.', ','), 'haxelib.json'
-                ]));
+                    path, Manifest.FILE
+                ]))
+            )
+            .next(function(manifest) {
+                switch manifest.location {
+                    case None: manifest.location = 
+                        Some({type: Remote, url: Url.parse(Haxelib.downloadUrl(manifest.name, manifest.version))});
+                    default:
+                }
+                return manifest;
             });
     }
 

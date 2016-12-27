@@ -34,10 +34,9 @@ class Add extends Command {
             version = lock.dependencies.get(lib).version;
             switch source {
                 case None:
-                    for (dep in manifest.dependencies) {
+                    for (dep in manifest.dependencies)
                         if (dep.name == lib)
                             dep.source = '^$version';
-                    }
                 default:
             }
             return Future.ofMany([manifest.write(), lock.write()]);

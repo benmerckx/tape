@@ -2,6 +2,7 @@ package ;
 
 import tape.*;
 import haxe.Json;
+import tape.Installer;
 
 using tink.CoreApi;
 
@@ -16,6 +17,7 @@ class RunTests {
   }
 
   static function main() {
+      trace('ok');
       // todo
   }
   

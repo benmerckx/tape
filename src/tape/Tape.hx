@@ -39,18 +39,14 @@ class Tape extends CommandLine {
             fromString: function(str: String): Option<Source>
                 return 
                     if (str == null) None
-                    else try Some((str: Source)) 
-                    catch(e: Error)
-                        throw TapeError.create('Could not parse version source "$str"', 
-                            TapeError.fromError(e)
-                        )
+                    else Some((str: Source))
         });
-        try 
-            @:privateAccess tink.RunLoop.create(function()
+        @:privateAccess tink.RunLoop.create(function()
+            try
                 new Dispatch(args).dispatch(new Tape())
-            )
-        catch (e: Error)
-            Reporter.fail(e);
+            catch (e: Error)
+                Reporter.fail(e)
+        );
     }
 
 }

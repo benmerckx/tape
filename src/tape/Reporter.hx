@@ -30,7 +30,7 @@ abstract Reporter(ReporterInterface) from ReporterInterface {
 
     public static function fail(e: Error) {
         tink.RunLoop.current.work(function() {
-            StdOutPrinter.clear();
+            //StdOutPrinter.clear();
             Sys.print('$e');
             Sys.exit(e.code);
         });

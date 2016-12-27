@@ -40,7 +40,11 @@ abstract Lock(LockData) from LockData {
 
     function dependenciesJson(dependencies: Dependencies)
         return [for (manifest in dependencies)
-            manifest.name => manifest.toJson(false)
+            manifest.name => {
+                var rep = manifest.toJson(false);
+                rep.remove('name');
+                rep;
+            }
         ];
 
     function toJson()
@@ -57,7 +61,7 @@ abstract Lock(LockData) from LockData {
         function extract(input: DynamicAccess<JsonSchema>)
             return [
                 for (key in input.keys()) 
-                    key => Manifest.fromJsonSchema(input.get(key)).sure()
+                    key => Manifest.fromJsonSchema(input.get(key), key).sure()
             ];
         for (field in ['manifest', 'dependencies', 'reels'])
             if (!data.exists('manifest')) 

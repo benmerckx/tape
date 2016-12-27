@@ -16,7 +16,7 @@ class Solver {
     public function new(dependencies: Array<Dependency>)
         remaining = dependencies.copy();
     
-    public function solve(reporter: Reporter, previous: Option<Lock>): Promise<Map<String, Manifest>>
+    public function solve(reporter: Reporter, previous: Option<Lock>): Promise<Map<String, Manifest>> {
         return advance(previous)
             .forEach(function (manifest) {
                 reporter.report({
@@ -29,6 +29,7 @@ class Solver {
                 case Failure(e):
                     Failure(e);
             });
+    }
 
     function advance(previous: Option<Lock>): Stream<Manifest> return function(): Future<StreamStep<Manifest>> {
         var dependency = null;

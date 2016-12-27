@@ -5,6 +5,7 @@ import haxe.DynamicAccess;
 import semver.SemVer;
 import tape.solver.Solver;
 import tape.Json;
+import tink.Url;
 
 using tink.CoreApi;
 
@@ -15,7 +16,8 @@ typedef JsonSchema = {
 	?tape: {
         ?dependencies: DynamicAccess<String>,
         ?reels: DynamicAccess<DynamicAccess<String>>
-    }
+    },
+    ?location: String
     // ...metadata...
 }
 
@@ -25,6 +27,7 @@ typedef ManifestData = {
 	var dependencies: Array<Dependency>;
     var reels: Map<String, Array<Dependency>>;
 	var metadata: Map<String, Any>;
+    var location: Option<Location>;
 }
 
 @:forward
@@ -32,11 +35,12 @@ abstract Manifest(ManifestData) from ManifestData {
 
     public static var FILE = 'haxelib.json';
 
-    public function new(name: String, version: SemVer)
+    public function new(name: String, version: SemVer, ?location: Location)
         this = {
             name: name, version: version, 
             dependencies: [], reels: new Map(), 
-            metadata: new Map()
+            metadata: new Map(),
+            location: if(location == null) None else Some(location)
         }
 
     public function key()
@@ -62,17 +66,25 @@ abstract Manifest(ManifestData) from ManifestData {
                 name: reel, 
                 solver: new Solver(this.reels.get(reel).concat(this.dependencies))
             });
-        for (task in tasks)
-            results.push(
-                (task.solver.solve(reporter.task(
-                    if (task.name == null) 'Resolving dependencies'
-                    else 'Resolving reel "${task.name}"'
-                ), previous): Surprise<Map<String, Manifest>, Error>)
-                .map(function(result) return {
-                    name: task.name,
-                    versions: result
-                })
-            );
+            
+        for (task in tasks) {
+            var worker = tink.RunLoop.current.createSlave();
+            results.push(Future.flatten(
+                tink.RunLoop.current.delegate(function() {
+                    var trigger = Future.trigger();
+                    task.solver.solve(reporter.task(
+                        if (task.name == null) 'Resolving dependencies'
+                        else 'Resolving reel "${task.name}"'
+                    ), previous).handle(function(result) {
+                        trigger.trigger({
+                            name: task.name,
+                            versions: result
+                        });
+                    });
+                    return trigger.asFuture();
+                }, worker)
+            ));
+        }
         
         return Future.ofMany(results).map(function(response) {
             var lock = new Lock(this);
@@ -107,6 +119,10 @@ abstract Manifest(ManifestData) from ManifestData {
                 reel => dependenciesJson(this.reels.get(reel))
             ]
         });
+        switch this.location {
+            case Some(url): data.set('location', url);
+            default:
+        }
         return data;
     }
 
@@ -146,7 +162,12 @@ abstract Manifest(ManifestData) from ManifestData {
                         return ['name', 'version', 'tape'].indexOf(key) == -1
                     );
                     [for (key in other) key => fields.get(key)];
-                }
+                }, 
+                location:
+                    if (data.location != null)
+                        Some((data.location: Location))
+                    else
+                        None
             }
         );
     }
