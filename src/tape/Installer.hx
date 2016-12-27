@@ -1,18 +1,11 @@
 package tape;
 
-import tink.http.Client;
 import tape.config.HaxelibConfig;
-import tape.registry.Haxelib;
-import asys.io.File;
 import haxe.io.Path;
-import tink.http.Request;
-import tink.http.Response;
 import tink.runloop.Worker;
 import tink.concurrent.Queue;
-import tink.http.Header;
-import haxe.zip.Reader;
-import asys.io.FileInput;
 import tape.registry.Local;
+import semver.SemVer;
 
 using tink.CoreApi;
 
@@ -34,12 +27,15 @@ abstract Downloader(DownloaderData) from DownloaderData {
             }
             return switch job.location {
                 case Some(location):
-                    var dir = Path.join([path, job.name, job.version]);
-                    location.install(job.key(), dir, this.reporter)
+                    location.install({
+                        reporter: this.reporter,
+                        dir: path,
+                        name: job.name,
+                        version: Some(job.version)
+                    })
                     .next(next);
                 case None:
-                    next();
-                    //TapeError.create('No location found for "${job.key()}"');
+                    TapeError.create('No location found for "${job.key()}"');
             }
         }
 
@@ -73,6 +69,7 @@ class Installer {
         var all = [];
         for (manifest in lock.allDependencies())
             // We don't need to download if available locally
+            // Todo: put this on Location so it can be checked for git etc as well
             all.push(
                 (Local.instance.manifest(manifest.name, manifest.version): Surprise<Manifest, Error>)
                 .map(function(res) return switch res {

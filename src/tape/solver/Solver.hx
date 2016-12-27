@@ -17,7 +17,7 @@ class Solver {
         remaining = dependencies.copy();
     
     public function solve(reporter: Reporter, previous: Option<Lock>): Promise<Map<String, Manifest>> {
-        return advance(previous)
+        return advance(reporter, previous)
             .forEach(function (manifest) {
                 reporter.report({
                     description: 'Resolved "${manifest.key()}"'
@@ -31,7 +31,7 @@ class Solver {
             });
     }
 
-    function advance(previous: Option<Lock>): Stream<Manifest> return function(): Future<StreamStep<Manifest>> {
+    function advance(reporter: Reporter, previous: Option<Lock>): Stream<Manifest> return function(): Future<StreamStep<Manifest>> {
         var dependency = null;
         while (remaining.length > 0) {
             dependency = remaining.shift();
@@ -40,7 +40,7 @@ class Solver {
         }
         if (dependency == null)
             return Future.sync(End);
-        return dependency.candidates(previous)
+        return dependency.candidates(reporter, previous)
         .next().map(function(step) return switch step {
             case Data(manifest):
                 remaining = remaining.concat(manifest.dependencies);

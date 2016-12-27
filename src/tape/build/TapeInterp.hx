@@ -11,7 +11,7 @@ class TapeInterp {
     static function main() {
         var compiled = Path.join([path(), 'bin', 'tape.n']);
         //if (!sys.FileSystem.exists(compiled)) {
-            var flags = ['-cp', Path.join([path(), 'src']), 'lib/vendor.hxml', '-main', 'tape.Tape', '-D', 'concurrent', '-neko', compiled];
+            var flags = ['-cp', Path.join([path(), 'src']), 'lib/vendor.hxml', '-main', 'tape.Tape', '-neko', compiled];
             var code = Sys.command('haxe', flags);
             if (code != 0) Sys.exit(code);
         //}

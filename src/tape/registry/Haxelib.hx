@@ -22,7 +22,7 @@ class Haxelib implements RegistryBase {
     var http: Client;
 
     function new()
-        http = new SecureTcpClient(false);
+        http = new SecureStdClient();
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
         var request = new OutgoingRequest(

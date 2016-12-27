@@ -31,13 +31,18 @@ class UrlFetcher {
         http = new SecureTcpClient(false);
     }
 
-    public function fetch(name: String, path: String, reporter: Reporter): Stream<FileData> {
+    public function fetch(ctx: FetchContext): Stream<FileData> {
+        var path: String;
+        switch ctx.version {
+            case Some(v): path = Path.join([ctx.dir, ctx.name, v]);
+            case None: return Stream.failure(TapeError.create('No version for "${ctx.name}"'));
+        }
         var archive = Path.join([path, 'download.tmp']);
-        reporter.report({description: 'Downloading "$name"'});
+        ctx.reporter.report({description: 'Downloading "${ctx.name}"'});
         return download(archive).next(function(_): Stream<FileData> {
             return (File.read(archive): Promise<FileInput>)
             .next(function(file): Stream<FileData> {
-                reporter.report({description: 'Installing "$name"'});
+                ctx.reporter.report({description: 'Installing "${ctx.name}"'});
                 var entries;
                 try entries = Reader.readZip(file)
                 catch (e: Dynamic)
@@ -47,10 +52,6 @@ class UrlFetcher {
                     var entry = entries.pop();
                     return if (entry == null) {
                         file.close();
-                        // Todo:
-                        // Update the haxelib.json file of the installed lib to include the resolved url
-                        // So on subsequent installs the resolved url of the cached lib can be used
-                        // Because lock files can be shared and so must include resolved url
                         FileSystem.deleteFile(archive)
                         .map(function(res) return switch res {
                             case Success(_): End;

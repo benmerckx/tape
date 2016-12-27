@@ -1,10 +1,11 @@
 package tape;
 
-import semver.SemVer;
 import tape.Source;
 import tink.streams.Stream;
 import tink.streams.StreamStep;
 import tape.registry.Cache;
+import tape.config.HaxelibConfig;
+import haxe.io.Path;
 
 using tink.CoreApi;
 
@@ -22,7 +23,7 @@ abstract Dependency(DependencyData) from DependencyData {
             source: source
         };
 
-    public function candidates(lock: Option<Lock>): Stream<Manifest>
+    public function candidates(reporter: Reporter, lock: Option<Lock>): Stream<Manifest>
         return switch this.source {
             case Versioned(range, registry):
                 registry = switch lock {
@@ -49,8 +50,22 @@ abstract Dependency(DependencyData) from DependencyData {
                             case End: Future.sync(End);
                             case Fail(e): Future.sync(Fail(e));
                         });
-            case Pinned(location): 
-                Stream.failure(TapeError.create('todo'));
+            case Pinned(location):
+                return HaxelibConfig.getGlobalRepositoryPath()
+                .next(function (dir)
+                    return location.install({
+                        reporter: reporter,
+                        dir: dir,
+                        name: this.name,
+                        version: None
+                    })
+                )
+                .next(function(path)
+                    return Manifest.fromFile(Path.join([path, Manifest.FILE]))
+                )
+                .next(function (manifest): Stream<Manifest>
+                    return [manifest].iterator()
+                );
         }
 
     @:to

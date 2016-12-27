@@ -20,7 +20,6 @@ class Local implements RegistryBase {
     function new() {}
 
     public function manifest(name: String, version: SemVer): Promise<Manifest> {
-        var local: String;
         var proper: String;
         var deprecated: String;
         return HaxelibConfig.getGlobalRepositoryPath()
