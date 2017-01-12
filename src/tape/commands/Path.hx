@@ -9,14 +9,10 @@ class Path extends Command {
         .next(function (_) return lock = _)
         .next(Install.install)
         .next(function (_) return lock.dependencies.path())
-        .next(function (path) return path.join('\n'));
+        .next(function (path) return 'Path: \n'+path.join('\n')+'\n> Done');
     }
 
     public function runDefault()
-        run().handle(function (res) switch res {
-            case Failure(e): report(res);
-            case Success(path):
-                Sys.print(path);
-        });
+        run().handle(report);
 
 }

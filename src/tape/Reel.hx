@@ -23,10 +23,10 @@ abstract Reel(Map<String, Manifest>) from Map<String, Manifest> {
                 return extraOfDir(dir = _)
             )
             .next(function (info: Array<String>)
-                return info.concat([
-                    Path.join([dir, manifest.classPath]),
+                return [
+                    '-cp '+Path.join([dir, manifest.classPath]),
                     '-D ${manifest.name}=${manifest.version}'
-                ])
+                ].concat(info)
             )
         ]).map(function (res) {
             var response = [];
