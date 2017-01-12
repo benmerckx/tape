@@ -37,12 +37,20 @@ abstract Reporter(ReporterInterface) from ReporterInterface {
     }
 
     public static function success(e: String) {
+        inline function round(number:Float, ?precision=2): Float {
+            number *= Math.pow(10, precision);
+            return Math.round(number) / Math.pow(10, precision);
+        }
         tink.RunLoop.current.work(function() {
             StdOutPrinter.clear(true);
-            var diff = Date.now().getTime() - @:privateAccess StdOutPrinter.start;
-            Sys.print('> $e \x1b[94m${Std.int(diff/1000)}s\x1b[0m\n');
+            var diff = Sys.cpuTime() - @:privateAccess StdOutPrinter.start;
+            var time =
+                if (diff < 1) round(diff*1000)+'ms'
+                else round(diff)+'s';
+            Sys.print('> $e \x1b[94m${time}\x1b[0m\n');
         });
     }
+    
 
 }
 
@@ -51,7 +59,7 @@ class StdOutPrinter {
     static var MOVE_UP = ofHex('1b5b3141');
     static var CLEAR_LINE = ofHex('1b5b304b');
     static var last: Report;
-    static var start = Date.now().getTime();
+    static var start = Sys.cpuTime();
 
     static function ofHex(str: String): String
         return haxe.crypto.BaseCode.decode(str, "0123456789abcdef").toString();

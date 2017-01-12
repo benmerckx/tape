@@ -52,7 +52,7 @@ class Cache implements RegistryBase {
             var cache = cached.versionCache(manifest.name);
             cache.buffered.push(Future.sync(Data(manifest.version)));
         }
-        function fill(dependencies: Map<String, Manifest>)
+        function fill(dependencies: Reel)
             for (manifest in dependencies) {
                 cached.cache.manifest.set(manifest.key(), manifest);
                 addToVersions(manifest);

@@ -6,12 +6,10 @@ import tape.Manifest;
 
 using tink.CoreApi;
 
-typedef Dependencies = Map<String, Manifest>;
-
 typedef LockData = {
     manifest: Manifest,
-    dependencies: Dependencies,
-    reels: Map<String, Dependencies>
+    dependencies: Reel,
+    reels: Map<String, Reel>
 }
 
 @:forward
@@ -22,7 +20,7 @@ abstract Lock(LockData) from LockData {
     public function new(manifest: Manifest)
         this = {
             manifest: manifest,
-            dependencies: new Map(),
+            dependencies: new Reel(),
             reels: new Map()
         }
 
@@ -33,12 +31,12 @@ abstract Lock(LockData) from LockData {
         return new Installer(this, reporter).install();
 
     public function allDependencies(): Array<Manifest>
-        return Lambda.array(this.dependencies).concat(
-            Lambda.fold(this.reels, function(reel: Map<String, Manifest>, prev: Array<Manifest>) 
-                return prev.concat(Lambda.array(reel)), []
+        return this.dependencies.manifests().concat(
+            Lambda.fold(this.reels, function(reel: Reel, prev: Array<Manifest>) 
+                return prev.concat(reel.manifests()), []
         ));
 
-    function dependenciesJson(dependencies: Dependencies)
+    function dependenciesJson(dependencies: Reel)
         return [for (manifest in dependencies)
             manifest.name => {
                 var rep = manifest.toJson(false);

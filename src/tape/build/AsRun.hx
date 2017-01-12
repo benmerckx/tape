@@ -3,7 +3,7 @@ package tape.build;
 import haxe.io.Path;
 
 // Run tape as haxelib run tape
-class TapeInterp {
+class AsRun {
 
     macro static function path()
         return macro $v{Sys.getCwd()};

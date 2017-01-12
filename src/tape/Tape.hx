@@ -28,6 +28,12 @@ class Tape extends CommandLine {
         d.dispatch(new Install());
     }
 
+    /** Prints the path to a reel, as well as any compiler definitions required by those libraries **/
+    public function path(d: Dispatch) {
+        preventDefault();
+        d.dispatch(new Path());
+    }
+
     public function runDefault() {
         Sys.println(showUsage());
         Sys.exit(0);

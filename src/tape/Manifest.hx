@@ -5,13 +5,13 @@ import haxe.DynamicAccess;
 import semver.SemVer;
 import tape.solver.Solver;
 import tape.Json;
-import tink.Url;
 
 using tink.CoreApi;
 
 typedef JsonSchema = {
     ?name: String,
     ?version: String,
+    ?classPath: String,
 	?dependencies: DynamicAccess<String>,
 	?tape: {
         ?dependencies: DynamicAccess<String>,
@@ -24,6 +24,7 @@ typedef JsonSchema = {
 typedef ManifestData = {
 	var name: String;
 	var version: SemVer;
+    var classPath: String;
 	var dependencies: Array<Dependency>;
     var reels: Map<String, Array<Dependency>>;
 	var metadata: Map<String, Any>;
@@ -37,7 +38,7 @@ abstract Manifest(ManifestData) from ManifestData {
 
     public function new(name: String, version: SemVer, ?location: Location)
         this = {
-            name: name, version: version, 
+            name: name, version: version, classPath: '',
             dependencies: [], reels: new Map(), 
             metadata: new Map(),
             location: if(location == null) None else Some(location)
@@ -102,6 +103,12 @@ abstract Manifest(ManifestData) from ManifestData {
         });
     }
 
+    public function localPath(): Promise<String>
+        return switch this.location {
+            case None: TapeError.create('No location for "${key()}"');
+            case Some(location): location.localPath(this.name, this.version);
+        }
+
     function dependenciesJson(dependencies: Array<Dependency>)
         return [for (dependency in dependencies)
             dependency.name => '${dependency.source}'
@@ -119,6 +126,8 @@ abstract Manifest(ManifestData) from ManifestData {
                 reel => dependenciesJson(this.reels.get(reel))
             ]
         });
+        if (this.classPath != '')
+            data.set('classPath', this.classPath);
         switch this.location {
             case Some(url): data.set('location', url);
             default:
@@ -146,6 +155,9 @@ abstract Manifest(ManifestData) from ManifestData {
                     if (data.version != null) data.version
                     else if (name != null) ('0.0.0': SemVer)
                     else throw 'Version field is empty',
+                classPath:
+                    if (data.classPath == null) ''
+                    else data.classPath,
                 dependencies: 
                     if (data.tape != null && data.tape.dependencies != null)
                         extract(data.tape.dependencies)
@@ -159,7 +171,7 @@ abstract Manifest(ManifestData) from ManifestData {
                 metadata: {
                     var fields: DynamicAccess<Any> = cast data;
                     var other = fields.keys().filter(function(key) 
-                        return ['name', 'version', 'tape'].indexOf(key) == -1
+                        return ['name', 'version', 'tape', 'classPath'].indexOf(key) == -1
                     );
                     [for (key in other) key => fields.get(key)];
                 }, 

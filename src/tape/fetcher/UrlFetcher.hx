@@ -5,7 +5,6 @@ import tink.streams.Stream;
 import tink.streams.StreamStep;
 import tape.Location;
 import tink.http.Client;
-import tape.registry.Haxelib;
 import haxe.io.Path;
 import asys.io.File;
 import tink.http.Request;

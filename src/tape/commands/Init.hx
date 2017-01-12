@@ -8,7 +8,7 @@ using tink.CoreApi;
 
 class Init extends Command {
 
-    public static function run() {
+    public static function run()
         return FileSystem.exists(Manifest.FILE).flatMap(function(exists) {
             if (exists)
                 return Future.sync(Failure(TapeError.create('Manifest file "${Manifest.FILE}" already exists')));
@@ -17,7 +17,6 @@ class Init extends Command {
             return manifest.write()
                 .next(function (res) return 'Initialized "$manifest"');
         });
-    }
 
     public function runDefault()
         run().handle(report);

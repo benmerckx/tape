@@ -1,11 +1,8 @@
 package tape;
 
 import tape.config.HaxelibConfig;
-import haxe.io.Path;
 import tink.runloop.Worker;
 import tink.concurrent.Queue;
-import tape.registry.Local;
-import semver.SemVer;
 
 using tink.CoreApi;
 
@@ -66,28 +63,24 @@ class Installer {
     }
 
     public function install(): Promise<Noise> {
-        var all = [];
-        for (manifest in lock.allDependencies())
-            // We don't need to download if available locally
-            // Todo: put this on Location so it can be checked for git etc as well
-            all.push(
-                (Local.instance.manifest(manifest.name, manifest.version): Surprise<Manifest, Error>)
+        var all = [
+            for (manifest in lock.allDependencies())
+                (manifest.localPath(): Surprise<String, Error>)
                 .map(function(res) return switch res {
                     case Failure(e): 
                         queue.add(manifest);
                         true;
                     default: false;
                 })
-            );
+        ];
         return Future.ofMany(all).flatMap(function(todo) {
             var max = todo.filter(function(item) return item).length;
             if (max > amount) max = amount;
             downloaders = [
-                for (i in 0 ... max)
-                    {
-                        reporter: reporter.task('Fetching'), 
-                        worker: tink.RunLoop.current.createSlave()
-                    }
+                for (i in 0 ... max) {
+                    reporter: reporter.task('Fetching'), 
+                    worker: tink.RunLoop.current.createSlave()
+                }
             ];
             return download().next(function (results) {
                 for (res in results) switch res {

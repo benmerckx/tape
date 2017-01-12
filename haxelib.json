@@ -4,7 +4,7 @@
     "benmerckx"
   ],
   "license": "MIT",
-  "main": "tape.build.TapeInterp",
+  "main": "tape.build.AsRun",
   "name": "tape",
   "releasenote": "initial release",
   "tags": [],

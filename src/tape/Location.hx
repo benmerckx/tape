@@ -8,6 +8,7 @@ import asys.io.File;
 import asys.FileSystem;
 import haxe.io.Path;
 import haxe.io.Bytes;
+import tape.config.HaxelibConfig;
 import semver.SemVer;
 
 using tink.CoreApi;
@@ -50,6 +51,29 @@ abstract Location(LocationData) from LocationData {
             {type: Remote, url: Url.parse(str)}
         else
             throw TapeError.create('No location found in "$str"');
+
+    public function localPath(name: String, version: SemVer): Promise<String>
+        return switch this.type {
+            case Remote | Git:
+                var dir;
+                HaxelibConfig.getGlobalRepositoryPath()
+                .next(function(path) {
+                    var local = switch this.type {
+                        // Todo: add the comma version here?
+                        case Remote: version.toString();
+                        case Git: GitFetcher.DIR_PREFIX+this.url.hash;
+                        default: throw "Unreachable";
+                    }
+                    dir = Path.join([path, name, local]);
+                    return FileSystem.exists(dir);
+                })
+                .next(function (exists)
+                    return if (exists) dir
+                    else TapeError.create('Directory does not exist "$dir"')
+                );
+            case Local:
+                this.url.path;
+        }
 
     public function install(ctx: FetchContext): Promise<String> {
         var failure: Error;
