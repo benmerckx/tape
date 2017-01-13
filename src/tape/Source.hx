@@ -2,10 +2,8 @@ package tape;
 
 import semver.RangeSet;
 import tape.registry.*;
-import tink.Url;
 
 using tink.CoreApi;
-using StringTools;
 
 enum SourceType {
     Versioned(range: RangeSet, registry: Registry);
@@ -14,7 +12,7 @@ enum SourceType {
 
 abstract Source(SourceType) from SourceType {
 
-    static var registry = new Cache(Local.instance.concat(Haxelib.instance));
+    static var registry = new Cache(Local.instance.concat(HaxeReleases.instance).concat(Haxelib.instance));
    
     @:from
     static function fromString(str: String): Source

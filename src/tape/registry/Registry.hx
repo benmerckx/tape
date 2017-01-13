@@ -13,7 +13,7 @@ interface RegistryBase {
 @:forward
 abstract Registry(RegistryBase) from RegistryBase {
 
-    inline public function concat(registry: Registry) {
+    inline public function concat(registry: Registry): Registry {
         if (Std.is(this, ConcatRegistry)) {
             (cast this: ConcatRegistry).parts.push(registry);
             return this;

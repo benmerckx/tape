@@ -15,6 +15,7 @@ import asys.io.FileInput;
 import haxe.zip.Reader;
 import haxe.zip.Entry;
 import asys.FileSystem;
+import tape.registry.HaxeReleases;
 
 using tink.CoreApi;
 using Lambda;
@@ -33,7 +34,10 @@ class UrlFetcher {
     public function fetch(ctx: FetchContext): Stream<FileData> {
         var path: String;
         switch ctx.version {
-            case Some(v): path = Path.join([ctx.dir, ctx.name, v]);
+            case Some(version): 
+                path = Path.join([ctx.dir, ctx.name, version]);
+                if (url.toString().startsWith(HaxeReleases.DOWNLOAD_URL))
+                    url = url.resolve('downloads/haxe-$version-win.zip');
             case None: return Stream.failure(TapeError.create('No version for "${ctx.name}"'));
         }
         var archive = Path.join([path, 'download.tmp']);
@@ -100,7 +104,7 @@ class UrlFetcher {
         return new OutgoingRequest(
             new OutgoingRequestHeader(GET, new Host(host.name, 443), url.path,
                 [
-                    new HeaderField('connection', 'close'), 
+                    new HeaderField('connection', 'close'),
                     new HeaderField('content-length', '0')
                 ]
             ), ''
@@ -110,7 +114,7 @@ class UrlFetcher {
     function download(zip): Promise<Noise> {
         var file = File.writeStream(zip);
         function response(res: IncomingResponse): Promise<Noise> {
-            if (res.header.statusCode == 301) {
+            if (res.header.statusCode == 301 || res.header.statusCode == 302) {
                 var location = res.header.byName('location').sure();
                 return http
                     .request(outgoing('$location'))
